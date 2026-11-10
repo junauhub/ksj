@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoGuard School - 교내 탄소배출 줄이기</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
+    * {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+
+    /* Custom Animations & Transitions */
+    .pulse-green {
+      animation: pulseGreen 2s infinite;
+    }
+    
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    .pulse-amber {
+      animation: pulseAmber 2s infinite;
+    }
+
+    @keyframes pulseAmber {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+  </style>
+</head>
+<body class="bg-emerald-50/50 min-h-screen text-slate-800 flex flex-col justify-between p-4 md:p-8">
+
+  <!-- Main Container -->
+  <div class="max-w-2xl mx-auto w-full space-y-6">
+
+    <!-- Header -->
+    <header class="bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3 text-center sm:text-left">
+        <div class="p-3 bg-emerald-500 text-white rounded-2xl shadow-md">
+          <i data-lucide="leaf" class="w-8 h-8"></i>
+        </div>
+        <div>
+          <div class="flex items-center justify-center sm:justify-start gap-2">
+            <h1 class="text-2xl font-bold text-emerald-950 tracking-tight">EcoGuard School</h1>
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-200">SDG 13</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">팀 제미나이 • 스마트 교내 전력 및 탄소배출 모니터링</p>
+        </div>
+      </div>
+      <button onclick="resetAllRooms()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl transition flex items-center gap-1">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> 데이터 초기화
+      </button>
+    </header>
+
+    <!-- Real-time Carbon & Power Dashboard -->
+    <section class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+      <!-- Decorative Background Elements -->
+      <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute -left-10 -top-10 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="flex justify-between items-center mb-6 relative z-10 border-b border-white/15 pb-4">
+        <h2 class="text-sm font-semibold tracking-wide text-emerald-100 uppercase flex items-center gap-2">
+          <i data-lucide="gauge" class="w-4 h-4"></i> 오늘의 실시간 감축 현황
+        </h2>
+        <span class="text-xs bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-emerald-50 font-medium">
+          자동 계산 중
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 relative z-10 text-center">
+        <!-- Power Saved -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <div class="flex justify-center items-center gap-1.5 text-emerald-100 text-xs font-medium mb-1">
+            <i data-lucide="zap" class="w-4 h-4 text-amber-300"></i> 누적 절감 전력
+          </div>
+          <div class="text-3xl md:text-4xl font-extrabold tracking-tight" id="saved-power">0.00</div>
+          <div class="text-xs text-emerald-200 mt-1">kWh</div>
+        </div>
+
+        <!-- Carbon Reduction -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <div class="flex justify-center items-center gap-1.5 text-emerald-100 text-xs font-medium mb-1">
+            <i data-lucide="cloud-off" class="w-4 h-4 text-emerald-200"></i> 탄소 감축량
+          </div>
+          <div class="text-3xl md:text-4xl font-extrabold tracking-tight" id="saved-carbon">0.00</div>
+          <div class="text-xs text-emerald-200 mt-1">kg CO₂</div>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 text-center border-t border-white/10 text-xs text-emerald-100/80">
+        💡 전원 차단 1회당 약 <b>0.45 kWh</b>의 전력과 <b>0.215 kg</b>의 탄소가 절감됩니다.
+      </div>
+    </section>
+
+    <!-- Zone Power Control Section -->
+    <section class="space-y-4">
+      <div class="flex justify-between items-center px-1">
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <i data-lucide="building-2" class="w-5 h-5 text-emerald-600"></i> 교내 구역별 전원 모니터링
+        </h2>
+        <span id="active-count-badge" class="text-xs font-medium text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">
+          작동 중 0곳
+        </span>
+      </div>
+
+      <!-- Room Cards List -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="room-container">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- Climate Campaign Certification -->
+    <section class="bg-white border border-emerald-200 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+      <div class="flex items-start gap-4">
+        <div class="p-3 bg-emerald-100 text-emerald-700 rounded-2xl shrink-0">
+          <i data-lucide="award" class="w-7 h-7"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-base font-bold text-slate-900">오늘의 교내 기후 행동 서약</h3>
+          <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+            "사용하지 않는 교실을 나올 때 조명과 냉난방기가 꺼졌는지 반드시 확인하겠습니다!"
+          </p>
+          
+          <div class="mt-4 flex flex-col sm:flex-row items-center gap-3">
+            <button id="campaign-btn" onclick="participateCampaign()" class="w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-3 px-5 rounded-2xl transition shadow-md flex items-center justify-center gap-2">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i> 기후 실천 인증하기
+            </button>
+            <div class="text-xs text-slate-500 font-medium whitespace-nowrap bg-slate-100 px-3 py-2 rounded-xl">
+              현재 <span id="campaign-count" class="font-bold text-emerald-700">0</span>명 참여 중
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Ethical & Safety Footer -->
+  <footer class="max-w-2xl mx-auto w-full text-center mt-8 pt-4 border-t border-emerald-100 text-xs text-slate-400 space-y-1">
+    <div class="flex justify-center items-center gap-1 text-emerald-600 font-medium">
+      <i data-lucide="shield-check" class="w-4 h-4"></i> 개인정보 안심 원칙
+    </div>
+    <p>본 웹앱은 개인정보를 서버로 전송하지 않으며, 모든 모니터링 데이터는 브라우저(LocalStorage)에만 저장됩니다.</p>
+    <p class="text-slate-300">© EcoGuard School — SDG13 Climate Action Initiative</p>
+  </footer>
+
+  <script>
+    // 1. 초기 구역 데이터 구조
+    const defaultRooms = [
+      { id: 1, name: "1학년 1반 교실", location: "본관 2층", detail: "조명 8개 & 천장형 냉난방기", isOn: true, icon: "door-open" },
+      { id: 2, name: "과학실 (특별실)", location: "창의관 3층", detail: "실험 장비 & 대형 조명", isOn: true, icon: "flask-conical" },
+      { id: 3, name: "체육관 (강당)", location: "체육관 1층", detail: "메인 조명 & 대형 환풍기", isOn: false, icon: "dumbbell" },
+      { id: 4, name: "3층 중앙 복도", location: "본관 3층", detail: "창측/복도측 조명 세트", isOn: true, icon: "footprints" }
+    ];
+
+    // 2. 수치 계산 기준
+    const KWH_PER_OFF = 0.45; // 전원 1개 끄기당 절감 kWh
+    const CARBON_PER_KWH = 0.478; // 1 kWh당 CO2 배출량(kg)
+
+    // 3. LocalStorage 상태 로드
+    let rooms = JSON.parse(localStorage.getItem('ecoguard_rooms')) || defaultRooms;
+    let savedPower = parseFloat(localStorage.getItem('ecoguard_power')) || 0;
+    let campaignCount = parseInt(localStorage.getItem('ecoguard_campaign')) || 24;
+    let userParticipated = localStorage.getItem('ecoguard_participated') === 'true';
+
+    // DOM Elements
+    const roomContainer = document.getElementById('room-container');
+    const savedPowerEl = document.getElementById('saved-power');
+    const savedCarbonEl = document.getElementById('saved-carbon');
+    const campaignCountEl = document.getElementById('campaign-count');
+    const activeCountBadge = document.getElementById('active-count-badge');
+    const campaignBtn = document.getElementById('campaign-btn');
+
+    // 대시보드 및 수치 업데이트
+    function updateDashboard() {
+      savedPowerEl.textContent = savedPower.toFixed(2);
+      savedCarbonEl.textContent = (savedPower * CARBON_PER_KWH).toFixed(2);
+      campaignCountEl.textContent = campaignCount;
+
+      const activeRooms = rooms.filter(r => r.isOn).length;
+      activeCountBadge.textContent = `작동 중 ${activeRooms}곳`;
+      
+      if(activeRooms > 0) {
+        activeCountBadge.className = "text-xs font-medium text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full";
+      } else {
+        activeCountBadge.className = "text-xs font-medium text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full";
+        activeCountBadge.textContent = "모든 구역 절전 중!";
+      }
+
+      // 로컬 스토리지 저장
+      localStorage.setItem('ecoguard_rooms', JSON.stringify(rooms));
+      localStorage.setItem('ecoguard_power', savedPower.toString());
+      localStorage.setItem('ecoguard_campaign', campaignCount.toString());
+      
+      updateCampaignButtonState();
+    }
+
+    // 캠페인 버튼 상태 업데이트
+    function updateCampaignButtonState() {
+      if (userParticipated) {
+        campaignBtn.disabled = true;
+        campaignBtn.className = "w-full sm:w-auto flex-1 bg-slate-100 text-slate-400 text-sm font-semibold py-3 px-5 rounded-2xl cursor-not-allowed flex items-center justify-center gap-2 border border-slate-200";
+        campaignBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> 오늘 실천 인증 완료됨`;
+      }
+    }
+
+    // 구역 카드 랜더링
+    function renderRooms() {
+      roomContainer.innerHTML = '';
+      
+      rooms.forEach(room => {
+        const card = document.createElement('div');
+        card.className = `p-5 rounded-2xl border transition-all duration-300 flex flex-col justify-between ${
+          room.isOn 
+            ? 'bg-white border-amber-200 shadow-sm' 
+            : 'bg-emerald-50/60 border-emerald-200'
+        }`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <div class="p-2 rounded-xl ${room.isOn ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">
+                  <i data-lucide="${room.icon}" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800 text-sm">${room.name}</h3>
+                  <span class="text-[11px] text-slate-400">${room.location}</span>
+                </div>
+              </div>
+              <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                room.isOn 
+                  ? 'bg-amber-100 text-amber-800 pulse-amber' 
+                  : 'bg-emerald-100 text-emerald-800'
+              }">
+                ${room.isOn ? '⚡ 사용 중' : '🌱 차단 완료'}
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">${room.detail}</p>
+          </div>
+
+          <button onclick="togglePower(${room.id})" 
+            class="w-full py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+              room.isOn
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+            }">
+            <i data-lucide="${room.isOn ? 'power' : 'power'}" class="w-3.5 h-3.5"></i>
+            ${room.isOn ? '전원 끄기 (절약하기)' : '전원 켜기'}
+          </button>
+        `;
+
+        roomContainer.appendChild(card);
+      });
+
+      lucide.createIcons();
+      updateDashboard();
+    }
+
+    // 전원 토글 액션
+    function togglePower(id) {
+      const room = rooms.find(r => r.id === id);
+      if (room) {
+        room.isOn = !room.isOn;
+        // 끄면 절감 수치 증가, 다시 켜면 절감 수치 차감 (정확한 상태 반영)
+        if (!room.isOn) {
+          savedPower += KWH_PER_OFF;
+        } else {
+          savedPower = Math.max(0, savedPower - KWH_PER_OFF);
+        }
+        renderRooms();
+      }
+    }
+
+    // 캠페인 참여 액션
+    function participateCampaign() {
+      if (userParticipated) return;
+      
+      campaignCount++;
+      userParticipated = true;
+      localStorage.setItem('ecoguard_participated', 'true');
+      
+      renderRooms();
+      
+      // 모달/알림 메시지 대신 안전한 토스트 안내
+      const campaignBox = document.querySelector('.campaign-box');
+      const notice = document.createElement('div');
+      notice.className = "mt-2 p-2 bg-emerald-600 text-white text-xs rounded-xl text-center font-medium animate-bounce";
+      notice.textContent = "🎉 서약에 참여해 주셔서 감사합니다! 소중한 탄소 발자국이 줄어듭니다.";
+      campaignBox?.appendChild(notice);
+      setTimeout(() => notice.remove(), 4000);
+    }
+
+    // 전체 리셋
+    function resetAllRooms() {
+      rooms = defaultRooms.map(r => ({ ...r }));
+      savedPower = 0;
+      campaignCount = 24;
+      userParticipated = false;
+      localStorage.removeItem('ecoguard_participated');
+      renderRooms();
+    }
+
+    // 초기 실행
+    document.addEventListener('DOMContentLoaded', () => {
+      renderRooms();
+    });
+  </script>
+</body>
+</html>
